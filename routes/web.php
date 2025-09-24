@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\ApplicationController as AdminApplicationController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\InstituteController;
+use App\Http\Controllers\Admin\PeriodController;
 use App\Http\Controllers\Admin\ProgrammeController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
@@ -39,6 +40,7 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('users', UserController::class)->names('admin.users');
     Route::resource('institutes', InstituteController::class)->names('admin.institutes');
     Route::resource('programmes', ProgrammeController::class)->names('admin.programmes');
+    Route::resource('periods', PeriodController::class)->names('admin.periods');
     Route::resource('applications', AdminApplicationController::class)->names('admin.applications');
 
 });

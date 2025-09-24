@@ -49,7 +49,7 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'role' => ['required', 'exists:roles,name'],
-            'institute_id' => ['required_if:role,officer', 'exists:institutes,id'],
+            //'institute_id' => ['required_if:role,officer', 'exists:institutes,id'],
             // Student applicant fields
             // 'title' => ['required_if:role,student', 'string'],
             // 'firstnames' => ['required_if:role,student', 'string', 'max:255'],
