@@ -57,6 +57,8 @@ Route::prefix('officer')->middleware(['auth', 'role:officer'])->group(function (
 
 
 Route::prefix('student')->middleware(['auth', 'role:student'])->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Student\DashboardController::class, 'index'])->name('student.dashboard');
     Route::resource('applications', \App\Http\Controllers\Student\ApplicationController::class)->names('student.applications');
+    Route::post('applications/{application}/accept', [\App\Http\Controllers\Student\ApplicationController::class, 'accept'])->name('student.applications.accept');
 
 });
