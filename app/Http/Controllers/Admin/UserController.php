@@ -51,13 +51,13 @@ class UserController extends Controller
             'role' => ['required', 'exists:roles,name'],
             'institute_id' => ['required_if:role,officer', 'exists:institutes,id'],
             // Student applicant fields
-            'title' => ['required_if:role,student', 'string'],
-            'firstnames' => ['required_if:role,student', 'string', 'max:255'],
-            'surname' => ['required_if:role,student', 'string', 'max:255'],
-            'gender' => ['required_if:role,student', 'string', 'in:MALE,FEMALE'],
-            'phone' => ['required_if:role,student', 'digits:10', 'starts_with:07'],
-            'address' => ['required_if:role,student', 'string'],
-            'dob' => ['required_if:role,student', 'date', 'before_or_equal:31-12-2007'],
+            // 'title' => ['required_if:role,student', 'string'],
+            // 'firstnames' => ['required_if:role,student', 'string', 'max:255'],
+            // 'surname' => ['required_if:role,student', 'string', 'max:255'],
+            // 'gender' => ['required_if:role,student', 'string', 'in:MALE,FEMALE'],
+            // 'phone' => ['required_if:role,student', 'digits:10', 'starts_with:07'],
+            // 'address' => ['required_if:role,student', 'string'],
+            // 'dob' => ['required_if:role,student', 'date', 'before_or_equal:31-12-2007'],
         ]);
 
         try {

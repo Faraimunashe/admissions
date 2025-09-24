@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Admin\ApplicationController as AdminApplicationController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\InstituteController;
+use App\Http\Controllers\Admin\ProgrammeController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ProfileController;
@@ -36,11 +38,18 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
 
     Route::resource('users', UserController::class)->names('admin.users');
     Route::resource('institutes', InstituteController::class)->names('admin.institutes');
+    Route::resource('programmes', ProgrammeController::class)->names('admin.programmes');
+    Route::resource('applications', AdminApplicationController::class)->names('admin.applications');
 
 });
 
 Route::prefix('officer')->middleware(['auth', 'role:officer'])->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Officer\DashboardController::class, 'index'])->name('officer.dashboard');
     Route::resource('applications', ApplicationController::class)->names('officer.applications');
+    Route::post('applications/{application}/accept', [ApplicationController::class, 'accept'])->name('officer.applications.accept');
+    Route::post('applications/{application}/reject', [ApplicationController::class, 'reject'])->name('officer.applications.reject');
+    Route::post('applications/{application}/offer', [ApplicationController::class, 'offer'])->name('officer.applications.offer');
+    Route::resource('institute-programmes', \App\Http\Controllers\Officer\InstituteProgrammeController::class)->names('officer.institute-programmes');
 
 });
 
