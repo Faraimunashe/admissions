@@ -1,0 +1,51 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class ApplicationProgrammeOffered extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'application_id',
+        'programme_id',
+        'institute_id',
+        'user_id',
+    ];
+
+    /**
+     * Get the application that owns the offer.
+     */
+    public function application(): BelongsTo
+    {
+        return $this->belongsTo(Application::class);
+    }
+
+    /**
+     * Get the programme that owns the offer.
+     */
+    public function programme(): BelongsTo
+    {
+        return $this->belongsTo(Programme::class);
+    }
+
+    /**
+     * Get the institute that owns the offer.
+     */
+    public function institute(): BelongsTo
+    {
+        return $this->belongsTo(Institute::class);
+    }
+
+    /**
+     * Get the user who made the offer.
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+}
