@@ -18,6 +18,7 @@ class ApplicationAccepted extends Model
 
     /**
      * Get the application that owns the acceptance.
+     * This represents when a student accepts an offer from an institute.
      */
     public function application(): BelongsTo
     {
@@ -25,7 +26,7 @@ class ApplicationAccepted extends Model
     }
 
     /**
-     * Get the programme that owns the acceptance.
+     * Get the programme that was accepted.
      */
     public function programme(): BelongsTo
     {
@@ -33,7 +34,7 @@ class ApplicationAccepted extends Model
     }
 
     /**
-     * Get the institute that owns the acceptance.
+     * Get the institute whose offer was accepted.
      */
     public function institute(): BelongsTo
     {

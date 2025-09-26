@@ -31,11 +31,11 @@
                     </a>
                 </div>
                 <div class="flex items-center space-x-3">
-                    <button v-if="application.status === 'PENDING'" @click="showAcceptModal = true" class="inline-flex items-center px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200">
+                    <button v-if="canMakeOffer" @click="showOfferModal = true" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        Accept Application
+                        Make Offer
                     </button>
                     <button v-if="application.status === 'PENDING'" @click="showRejectModal = true" class="inline-flex items-center px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -257,27 +257,41 @@
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">Decisions</h3>
 
-                    <!-- Acceptance -->
+                    <!-- Student Acceptance -->
                     <div v-if="application.acceptance" class="mb-4 p-4 bg-green-50 rounded-lg border border-green-200">
                         <div class="flex items-center mb-2">
                             <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
-                            <span class="font-medium text-green-800">Accepted</span>
+                            <span class="font-medium text-green-800">Student Accepted</span>
                         </div>
                         <p class="text-sm text-green-700">
                             {{ application.acceptance.programme?.name }} at {{ application.acceptance.institute?.name }}
                         </p>
+                        <p class="text-xs text-green-600 mt-1">Student has accepted this offer</p>
                     </div>
 
-                    <!-- Offers -->
-                    <div v-if="application.offers?.length" class="mb-4">
-                        <h4 class="text-sm font-medium text-gray-700 mb-2">Offers</h4>
+                    <!-- Our Offers -->
+                    <div v-if="ourOffers.length" class="mb-4">
+                        <h4 class="text-sm font-medium text-gray-700 mb-2">Our Offers</h4>
                         <div class="space-y-2">
-                            <div v-for="offer in application.offers" :key="offer.id" class="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <div v-for="offer in ourOffers" :key="offer.id" class="p-3 bg-blue-50 rounded-lg border border-blue-200">
                                 <p class="text-sm font-medium text-blue-800">{{ offer.programme?.name }}</p>
                                 <p class="text-xs text-blue-600">{{ offer.institute?.name }}</p>
                                 <p v-if="offer.offer_details" class="text-xs text-blue-500 mt-1">{{ offer.offer_details }}</p>
+                                <p class="text-xs text-blue-500 mt-1">Made on {{ formatDate(offer.created_at) }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Other Offers -->
+                    <div v-if="otherOffers.length" class="mb-4">
+                        <h4 class="text-sm font-medium text-gray-700 mb-2">Other Offers</h4>
+                        <div class="space-y-2">
+                            <div v-for="offer in otherOffers" :key="offer.id" class="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                <p class="text-sm font-medium text-gray-800">{{ offer.programme?.name }}</p>
+                                <p class="text-xs text-gray-600">{{ offer.institute?.name }}</p>
+                                <p v-if="offer.offer_details" class="text-xs text-gray-500 mt-1">{{ offer.offer_details }}</p>
                             </div>
                         </div>
                     </div>
@@ -301,45 +315,50 @@
             </div>
         </div>
 
-        <!-- Accept Modal -->
-        <div v-if="showAcceptModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <!-- Offer Modal -->
+        <div v-if="showOfferModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div class="bg-white rounded-xl shadow-xl max-w-md w-full mx-4">
                 <div class="p-6">
                     <div class="flex items-center mb-4">
-                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
-                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                         </div>
                         <div>
-                            <h3 class="text-lg font-semibold text-gray-900">Accept Application</h3>
-                            <p class="text-sm text-gray-600">Select the programme to accept</p>
+                            <h3 class="text-lg font-semibold text-gray-900">Make Offer</h3>
+                            <p class="text-sm text-gray-600">Select the programme to offer to the student</p>
                         </div>
                     </div>
 
-                    <form @submit.prevent="acceptApplication">
+                    <form @submit.prevent="makeOffer">
                         <div class="mb-4">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Programme</label>
-                            <select v-model="acceptForm.programme_id" required class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                            <select v-model="offerForm.programme_id" required class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                 <option value="">Select a programme</option>
-                                <option v-for="programme in availableProgrammes" :key="programme.id" :value="programme.id">
+                                <option v-for="programme in availableProgrammes" :key="programme.id" :value="programme.programme_id">
                                     Choice {{ programme.choice }}: {{ programme.programme?.name }}
                                 </option>
                             </select>
                         </div>
 
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Offer Details (Optional)</label>
+                            <textarea v-model="offerForm.offer_details" rows="3" class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Add any additional details about this offer..."></textarea>
+                        </div>
+
                         <div class="flex items-center justify-end space-x-3">
-                            <button @click="showAcceptModal = false" type="button" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200">
+                            <button @click="showOfferModal = false" type="button" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200">
                                 Cancel
                             </button>
-                            <button type="submit" :disabled="acceptForm.processing" class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                                <span v-if="!acceptForm.processing">Accept Application</span>
+                            <button type="submit" :disabled="offerForm.processing" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span v-if="!offerForm.processing">Make Offer</span>
                                 <span v-else class="flex items-center">
                                     <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                     </svg>
-                                    Accepting...
+                                    Making Offer...
                                 </span>
                             </button>
                         </div>
@@ -369,7 +388,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">Programme</label>
                             <select v-model="rejectForm.programme_id" required class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500">
                                 <option value="">Select a programme</option>
-                                <option v-for="programme in availableProgrammes" :key="programme.id" :value="programme.id">
+                                <option v-for="programme in availableProgrammes" :key="programme.id" :value="programme.programme_id">
                                     Choice {{ programme.choice }}: {{ programme.programme?.name }}
                                 </option>
                             </select>
@@ -412,11 +431,12 @@ const props = defineProps({
     institute: Object
 })
 
-const showAcceptModal = ref(false)
+const showOfferModal = ref(false)
 const showRejectModal = ref(false)
 
-const acceptForm = useForm({
-    programme_id: ''
+const offerForm = useForm({
+    programme_id: '',
+    offer_details: ''
 })
 
 const rejectForm = useForm({
@@ -430,16 +450,43 @@ const availableProgrammes = computed(() => {
     )
 })
 
+const ourOffers = computed(() => {
+    if (!props.application.offers) return []
+    return props.application.offers.filter(offer =>
+        offer.institute_id === props.institute.id
+    )
+})
+
+const otherOffers = computed(() => {
+    if (!props.application.offers) return []
+    return props.application.offers.filter(offer =>
+        offer.institute_id !== props.institute.id
+    )
+})
+
+const canMakeOffer = computed(() => {
+    // Can make offer if:
+    // 1. Application is pending or responded
+    // 2. Student hasn't accepted any offer yet
+    // 3. We haven't already made an offer for all available programmes
+    if (props.application.acceptance) return false
+
+    const availableProgrammeIds = availableProgrammes.value.map(p => p.programme_id)
+    const ourOfferProgrammeIds = ourOffers.value.map(o => o.programme_id)
+
+    return availableProgrammeIds.some(id => !ourOfferProgrammeIds.includes(id))
+})
+
 const isProgrammeOfferedByInstitute = (programme) => {
     if (!programme?.institutes) return false
     return programme.institutes.some(institute => institute.id === props.institute.id)
 }
 
-const acceptApplication = () => {
-    acceptForm.post(`/officer/applications/${props.application.id}/accept`, {
+const makeOffer = () => {
+    offerForm.post(`/officer/applications/${props.application.id}/accept`, {
         onSuccess: () => {
-            showAcceptModal.value = false
-            acceptForm.reset()
+            showOfferModal.value = false
+            offerForm.reset()
         }
     })
 }

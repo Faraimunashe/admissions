@@ -53,6 +53,14 @@ class Application extends Model
     /**
      * Get the acceptances for the application.
      */
+    public function acceptances(): HasMany
+    {
+        return $this->hasMany(ApplicationAccepted::class);
+    }
+
+    /**
+     * Get the first acceptance for the application (for backward compatibility).
+     */
     public function acceptance(): HasOne
     {
         return $this->hasOne(ApplicationAccepted::class);
@@ -88,5 +96,21 @@ class Application extends Model
     public function scopeResponded($query)
     {
         return $query->where('status', 'RESPONDED');
+    }
+
+    /**
+     * Check if the application has been accepted by the student.
+     */
+    public function isAccepted(): bool
+    {
+        return $this->acceptances()->exists();
+    }
+
+    /**
+     * Get the accepted offer (if any).
+     */
+    public function acceptedOffer()
+    {
+        return $this->acceptances()->first();
     }
 }

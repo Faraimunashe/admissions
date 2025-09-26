@@ -151,9 +151,19 @@ class ApplicationController extends Controller
         ]);
 
         try {
-            // Check if application is already accepted
-            if ($application->acceptance) {
-                return back()->withErrors(['error' => 'Application has already been accepted.']);
+            // Check if student has already accepted any offer
+            if ($application->acceptances()->exists()) {
+                return back()->withErrors(['error' => 'This student has already accepted an offer. No more offers can be made.']);
+            }
+
+            // Check if this institute has already made an offer for this programme
+            $existingOffer = \App\Models\ApplicationProgrammeOffered::where('application_id', $application->id)
+                ->where('programme_id', $request->programme_id)
+                ->where('institute_id', $institute->id)
+                ->first();
+
+            if ($existingOffer) {
+                return back()->withErrors(['error' => 'Your institute has already made an offer for this programme.']);
             }
 
             // Verify the programme is offered by this institute
@@ -164,21 +174,24 @@ class ApplicationController extends Controller
 
             // Check if the programme is offered by this institute
             if (!$institute->programmes()->where('programme_id', $request->programme_id)->exists()) {
-                return back()->withErrors(['error' => 'You can only accept applications for programmes offered by your institute.']);
+                return back()->withErrors(['error' => 'You can only make offers for programmes offered by your institute.']);
             }
 
-            // Create acceptance record
-            \App\Models\ApplicationAccepted::create([
+            // Create offer record
+            \App\Models\ApplicationProgrammeOffered::create([
                 'application_id' => $application->id,
                 'programme_id' => $request->programme_id,
                 'institute_id' => $institute->id,
+                'user_id' => $officer->id,
             ]);
 
-            // Update application status
-            $application->update(['status' => 'RESPONDED']);
+            // Update application status to RESPONDED if it's still PENDING
+            if ($application->status === 'PENDING') {
+                $application->update(['status' => 'RESPONDED']);
+            }
 
             return redirect()->route('officer.applications.show', $application->id)
-                ->with('success', 'Application accepted successfully.');
+                ->with('success', 'Offer made successfully.');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Failed to accept application: ' . $e->getMessage()]);
         }
@@ -210,6 +223,16 @@ class ApplicationController extends Controller
         ]);
 
         try {
+            // Check if this institute has already responded to this application
+            $existingResponse = \App\Models\ApplicationProgrammeRejected::where('application_id', $application->id)
+                ->where('institute_id', $institute->id)
+                ->where('programme_id', $request->programme_id)
+                ->first();
+
+            if ($existingResponse) {
+                return back()->withErrors(['error' => 'Your institute has already responded to this programme for this application.']);
+            }
+
             // Verify the programme is offered by this institute
             $programme = $application->programmes->where('programme_id', $request->programme_id)->first();
             if (!$programme) {
@@ -230,8 +253,10 @@ class ApplicationController extends Controller
                 'reason' => $request->reason,
             ]);
 
-            // Update application status
-            $application->update(['status' => 'RESPONDED']);
+            // Update application status to RESPONDED if it's still PENDING
+            if ($application->status === 'PENDING') {
+                $application->update(['status' => 'RESPONDED']);
+            }
 
             return redirect()->route('officer.applications.show', $application->id)
                 ->with('success', 'Application rejected successfully.');
@@ -266,6 +291,21 @@ class ApplicationController extends Controller
         ]);
 
         try {
+            // Check if student has already accepted any offer
+            if ($application->acceptances()->exists()) {
+                return back()->withErrors(['error' => 'This student has already accepted an offer. No more offers can be made.']);
+            }
+
+            // Check if this institute has already made an offer for this programme
+            $existingOffer = \App\Models\ApplicationProgrammeOffered::where('application_id', $application->id)
+                ->where('programme_id', $request->programme_id)
+                ->where('institute_id', $institute->id)
+                ->first();
+
+            if ($existingOffer) {
+                return back()->withErrors(['error' => 'Your institute has already made an offer for this programme.']);
+            }
+
             // Verify the programme is offered by this institute
             $programme = $application->programmes->where('programme_id', $request->programme_id)->first();
             if (!$programme) {
@@ -277,16 +317,6 @@ class ApplicationController extends Controller
                 return back()->withErrors(['error' => 'You can only make offers for programmes offered by your institute.']);
             }
 
-            // Check if already offered
-            $existingOffer = \App\Models\ApplicationProgrammeOffered::where('application_id', $application->id)
-                ->where('programme_id', $request->programme_id)
-                ->where('institute_id', $institute->id)
-                ->first();
-
-            if ($existingOffer) {
-                return back()->withErrors(['error' => 'An offer has already been made for this programme.']);
-            }
-
             // Create offer record
             \App\Models\ApplicationProgrammeOffered::create([
                 'application_id' => $application->id,
@@ -295,6 +325,11 @@ class ApplicationController extends Controller
                 'user_id' => $officer->id,
                 'offer_details' => $request->offer_details,
             ]);
+
+            // Update application status to RESPONDED if it's still PENDING
+            if ($application->status === 'PENDING') {
+                $application->update(['status' => 'RESPONDED']);
+            }
 
             return redirect()->route('officer.applications.show', $application->id)
                 ->with('success', 'Offer made successfully.');

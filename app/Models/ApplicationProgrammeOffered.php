@@ -15,10 +15,12 @@ class ApplicationProgrammeOffered extends Model
         'programme_id',
         'institute_id',
         'user_id',
+        'offer_details',
     ];
 
     /**
      * Get the application that owns the offer.
+     * This represents when an officer makes an offer to a student.
      */
     public function application(): BelongsTo
     {
@@ -26,7 +28,7 @@ class ApplicationProgrammeOffered extends Model
     }
 
     /**
-     * Get the programme that owns the offer.
+     * Get the programme that is being offered.
      */
     public function programme(): BelongsTo
     {
@@ -34,7 +36,7 @@ class ApplicationProgrammeOffered extends Model
     }
 
     /**
-     * Get the institute that owns the offer.
+     * Get the institute making the offer.
      */
     public function institute(): BelongsTo
     {
@@ -42,7 +44,7 @@ class ApplicationProgrammeOffered extends Model
     }
 
     /**
-     * Get the user who made the offer.
+     * Get the officer who made the offer.
      */
     public function user(): BelongsTo
     {

@@ -87,7 +87,7 @@
                     </template>
 
                     <!-- Student Navigation -->
-                    <template v-else-if="$page.props.auth?.user?.roles?.[0]?.name === 'student'">
+                    <template v-else-if="$page.props.auth?.role?.name === 'student'">
                         <a href="/student/dashboard" class="flex items-center px-4 py-2 text-sm font-medium rounded-lg text-gray-600 hover:text-green-600 hover:bg-green-50 transition-colors duration-200">
                             <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
@@ -130,7 +130,7 @@
                     </button>
 
                     <!-- Profile Dropdown -->
-                    <Profile :username="username" />
+                    <Profile :username="username" :role="role" />
 
                     <!-- Mobile Menu Button -->
                     <button @click="toggleMobileMenu" class="lg:hidden p-2 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg">
@@ -212,7 +212,7 @@
                     </template>
 
                     <!-- Student Mobile Navigation -->
-                    <template v-else-if="$page.props.auth?.user?.roles?.[0]?.name === 'student'">
+                    <template v-else-if="$page.props.auth?.role?.name === 'student'">
                         <a href="/student/dashboard" class="flex items-center px-3 py-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-md text-base font-medium transition-colors duration-200">
                             <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
@@ -243,6 +243,7 @@ export default {
     },
     props: {
         username: String,
+        role: String
     },
     setup() {
         const mobileMenuOpen = ref(false);

@@ -13,7 +13,7 @@
             </div>
             <div class="hidden md:block text-left">
                 <p class="text-sm font-medium text-gray-900">{{ username }}</p>
-                <p class="text-xs text-gray-500">Administrator</p>
+                <p class="text-xs text-gray-500">{{ role }}</p>
             </div>
             <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -46,7 +46,7 @@
                         </div>
                         <div>
                             <p class="text-sm font-medium text-gray-900">{{ username }}</p>
-                            <p class="text-xs text-gray-500">Administrator</p>
+                            <p class="text-xs text-gray-500">{{ role }}</p>
                         </div>
                     </div>
                 </div>
@@ -111,7 +111,8 @@ export default {
         Link,
     },
     props: {
-        username: String
+        username: String,
+        role: String
     },
     setup() {
         const isOpen = ref(false);

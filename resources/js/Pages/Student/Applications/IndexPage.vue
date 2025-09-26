@@ -98,14 +98,25 @@
                                 </div>
 
                                 <!-- Acceptance -->
-                                <div v-if="application.acceptance" class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                                    <div class="flex items-center mb-2">
-                                        <svg class="w-4 h-4 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                        </svg>
-                                        <span class="text-sm font-medium text-blue-800">Accepted</span>
+                                <div v-if="application.acceptance" class="p-3 bg-green-50 border border-green-200 rounded-lg">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="flex items-center">
+                                            <svg class="w-4 h-4 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            <span class="text-sm font-medium text-green-800">Accepted</span>
+                                        </div>
+                                        <button
+                                            @click="downloadAcceptanceLetter(application.id, application.acceptance.id)"
+                                            class="inline-flex items-center px-3 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 shadow-sm"
+                                        >
+                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                            </svg>
+                                            Download Letter
+                                        </button>
                                     </div>
-                                    <p class="text-xs text-blue-700">{{ application.acceptance.programme?.name }} at {{ application.acceptance.institute?.name }}</p>
+                                    <p class="text-xs text-green-700">{{ application.acceptance.programme?.name }} at {{ application.acceptance.institute?.name }}</p>
                                 </div>
 
                                 <!-- Pending -->
@@ -163,6 +174,14 @@ const formatDate = (date) => {
         month: 'short',
         day: 'numeric'
     })
+}
+
+const downloadAcceptanceLetter = (applicationId, acceptanceId = null) => {
+    let url = `/student/applications/${applicationId}/acceptance-letter`
+    if (acceptanceId) {
+        url += `?acceptance_id=${acceptanceId}`
+    }
+    window.location.href = url
 }
 
 const getStatusClass = (status) => {

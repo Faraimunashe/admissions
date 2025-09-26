@@ -163,11 +163,11 @@
                                 </svg>
                                 View
                             </a>
-                            <button v-if="application.status === 'PENDING'" @click="quickAccept(application)" class="inline-flex items-center px-3 py-2 text-sm font-medium text-green-600 bg-green-50 rounded-lg hover:bg-green-100 transition-colors duration-200">
+                            <button v-if="application.status === 'PENDING' && !application.acceptance" @click="quickOffer(application)" class="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors duration-200">
                                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
-                                Accept
+                                Quick Offer
                             </button>
                         </div>
                     </div>
@@ -241,7 +241,7 @@ const clearFilters = () => {
     applyFilters()
 }
 
-const quickAccept = (application) => {
+const quickOffer = (application) => {
     // Get the first programme choice for this institute
     const programme = application.programmes.find(p => p.programme?.institutes?.some(i => i.id === institute.id))
     if (programme) {

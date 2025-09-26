@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
+use Barryvdh\DomPDF\PDF;
 
 class ApplicationController extends Controller
 {
@@ -193,8 +194,51 @@ class ApplicationController extends Controller
             ])
             ->findOrFail($id);
 
+        // Get available institutes for each offered programme
+        $offersWithInstitutes = [];
+        if ($application->offers) {
+            foreach ($application->offers as $offer) {
+                $programmeId = $offer->programme_id;
+
+                // Get all institutes that offer this programme and have made offers
+                $institutesForProgramme = $application->offers
+                    ->where('programme_id', $programmeId)
+                    ->map(function($offer) {
+                        return [
+                            'id' => $offer->institute->id,
+                            'name' => $offer->institute->name,
+                            'address' => $offer->institute->address,
+                            'phone' => $offer->institute->phone,
+                            'web' => $offer->institute->web,
+                            'logo' => $offer->institute->logo,
+                            'offer_id' => $offer->id,
+                            'offer_details' => $offer->offer_details ?? null,
+                            'created_at' => $offer->created_at
+                        ];
+                    })
+                    ->unique('id')
+                    ->values();
+
+                $offersWithInstitutes[] = [
+                    'programme' => $offer->programme,
+                    'institutes' => $institutesForProgramme
+                ];
+            }
+        }
+
+        // Remove duplicates by programme
+        $uniqueOffersWithInstitutes = [];
+        $seenProgrammes = [];
+        foreach ($offersWithInstitutes as $offer) {
+            if (!in_array($offer['programme']->id, $seenProgrammes)) {
+                $uniqueOffersWithInstitutes[] = $offer;
+                $seenProgrammes[] = $offer['programme']->id;
+            }
+        }
+
         return Inertia::render('Student/Applications/ShowPage', [
             'application' => $application,
+            'offersWithInstitutes' => $uniqueOffersWithInstitutes,
         ]);
     }
 
@@ -221,9 +265,9 @@ class ApplicationController extends Controller
             return back()->withErrors(['error' => 'This application has not been processed yet.']);
         }
 
-        // Check if student already has an acceptance
-        if ($application->acceptance) {
-            return back()->withErrors(['error' => 'You have already accepted an offer for this application.']);
+        // Check if student already has any acceptance
+        if ($application->acceptances()->exists()) {
+            return back()->withErrors(['error' => 'You have already accepted an offer. You cannot accept multiple offers.']);
         }
 
         // Verify the offer exists
@@ -238,7 +282,7 @@ class ApplicationController extends Controller
 
         try {
             // Create acceptance
-            $application->acceptance()->create([
+            $application->acceptances()->create([
                 'programme_id' => $request->programme_id,
                 'institute_id' => $request->institute_id,
             ]);
@@ -279,5 +323,63 @@ class ApplicationController extends Controller
         // Students cannot delete submitted applications
         return redirect()->route('student.applications.index')
             ->with('error', 'Applications cannot be deleted once submitted.');
+    }
+
+    /**
+     * Download acceptance letter.
+     */
+    public function downloadAcceptanceLetter(Request $request, string $id)
+    {
+        $applicant = auth()->user()->applicant()->first();
+
+        if (!$applicant) {
+            return redirect()->route('profile.index')
+                ->with('error', 'Please complete your applicant profile.');
+        }
+
+        $application = $applicant->applications()
+            ->with([
+                'acceptances.programme',
+                'acceptances.institute',
+                'period'
+            ])
+            ->findOrFail($id);
+
+        // Load the user relationship for the applicant
+        $applicant->load('user');
+
+        if ($application->acceptances->isEmpty()) {
+            return redirect()->route('student.applications.show', $application->id)
+                ->with('error', 'No acceptance found for this application.');
+        }
+
+        // Get specific acceptance if requested, otherwise get the first one
+        $acceptanceId = $request->query('acceptance_id');
+        if ($acceptanceId) {
+            $acceptance = $application->acceptances->where('id', $acceptanceId)->first();
+            if (!$acceptance) {
+                return redirect()->route('student.applications.show', $application->id)
+                    ->with('error', 'Acceptance not found.');
+            }
+        } else {
+            $acceptance = $application->acceptances->first();
+        }
+        $institute = $acceptance->institute;
+        $programme = $acceptance->programme;
+        $period = $application->period;
+
+        // Generate PDF
+        $pdf = app(PDF::class)->loadView('acceptance-letter', [
+            'applicant' => $applicant,
+            'institute' => $institute,
+            'programme' => $programme,
+            'period' => $period,
+            'acceptance' => $acceptance,
+            'application' => $application
+        ]);
+
+        $filename = 'Acceptance_Letter_' . $institute->name . '_' . $programme->name . '_' . date('Y-m-d') . '.pdf';
+
+        return $pdf->download($filename);
     }
 }
